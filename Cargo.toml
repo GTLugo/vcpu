@@ -1,7 +1,14 @@
 [package]
-name = "vcpu"
-version = "0.1.0"
-edition = "2021"
+name        = "vcpu"
+version     = "0.1.0"
+edition     = "2021"
+authors     = ["Gabriel Lugo <dev.gabriel.lugo@gmail.com>"]
+repository  = "https://github.com/GTLugo/vcpu"
+license     = "MIT OR Apache-2.0"
+readme      = "README.md"
+description = "A virtual cpu, modeled after the 6502"
+keywords    = ["cpu", "mos6502"]
+categories  = []
 
 [dependencies]
 enumflags2 = "0.7"
