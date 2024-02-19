@@ -1,11 +1,19 @@
-use crate::core::cpu::{Cpu, StatusFlags};
-use crate::core::instruction::{AddressingMode, Instruction, OpCode};
-use crate::error::CpuError;
+use crate::{
+  core::{
+    cpu::{Cpu, StatusFlags},
+    instruction::{AddressingMode, Instruction, OpCode},
+  },
+  error::CpuError,
+};
 
 impl Cpu {
   /// Returns how many cycles needed for completion of instruction
   pub(crate) fn execute(&mut self, instruction: Instruction) -> Result<u8, CpuError> {
-    let Instruction { opcode, mode, mut cycles } = instruction;
+    let Instruction {
+      opcode,
+      mode,
+      mut cycles,
+    } = instruction;
 
     let data: u8 = match mode {
       AddressingMode::Accumulator => self.a,
@@ -14,24 +22,16 @@ impl Cpu {
       AddressingMode::Relative(addr) => {
         let mut relative = addr as u16;
         if (relative & 0x80) == 0x80 {
-          // 7th bit is 1, so this is supposed to be signed. set the top bits to all 1s to enable
-          // 2s compliment arithmetic
+          // 7th bit is 1, so this is supposed to be signed. set the top bits to all 1s to
+          // enable 2s compliment arithmetic
           relative |= 0xFF00;
         }
         self.read(relative)
       }
-      AddressingMode::ZeroPage(addr) => {
-        self.read(addr as u16 & 0x00FF)
-      }
-      AddressingMode::ZeroPageX(addr) => {
-        self.read((addr + self.x as u16) & 0x00FF)
-      }
-      AddressingMode::ZeroPageY(addr) => {
-        self.read((addr + self.y as u16) & 0x00FF)
-      }
-      AddressingMode::Absolute(addr) => {
-        self.read(addr)
-      }
+      AddressingMode::ZeroPage(addr) => self.read(addr as u16 & 0x00FF),
+      AddressingMode::ZeroPageX(addr) => self.read((addr + self.x as u16) & 0x00FF),
+      AddressingMode::ZeroPageY(addr) => self.read((addr + self.y as u16) & 0x00FF),
+      AddressingMode::Absolute(addr) => self.read(addr),
       AddressingMode::AbsoluteX(addr) => {
         let (addr, overflow) = addr.overflowing_add(self.x as u16);
         if overflow {

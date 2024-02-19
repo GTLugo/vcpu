@@ -1,7 +1,7 @@
-pub mod types;
-pub mod cpu;
 pub mod bus;
-pub mod ram;
-mod instruction;
+pub mod cpu;
 mod decode;
 mod execute;
+mod instruction;
+pub mod ram;
+pub mod types;
