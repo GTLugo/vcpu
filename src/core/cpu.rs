@@ -36,6 +36,7 @@ pub struct Cpu {
   pub(crate) status: BitFlags<StatusFlags>,
 
   clock_speed: f64,
+  clock: u64,
   cycles: u8,
 }
 
@@ -67,6 +68,7 @@ impl Cpu {
       program_counter: 0,
       status,
       clock_speed,
+      clock: 0,
       cycles: 0,
     }
   }
@@ -80,13 +82,12 @@ impl Cpu {
       let state_before = format!("{self:?}");
       let opcode = self.fetch()?;
       let instruction = self.decode(opcode)?;
-      let instr_string = format!("  |\n  +--> {instruction:?}");
+      let instr_string = format!("  => {instruction:?}");
       self.cycles += self.execute(instruction)?;
-      let mut lock = stdout().lock();
-      writeln!(lock, "Before: [{state_before}]\nAfter: [{self:?}]\n{instr_string}\n").unwrap();
-      // std::io::stdout().write_fmt(format_args!()).flush().expect("a");
+      println!("[{}]\nBefore: [{state_before}]\n{instr_string}\nAfter: [{self:?}]\n", self.clock);
     }
 
+    self.clock += 1;
     self.cycles -= 1;
 
     Ok(())
@@ -119,6 +120,7 @@ impl Cpu {
     let hi = self.read(Self::RESET_ADDRESS + 1);
     self.program_counter = u16::from_le_bytes([lo, hi]);
 
+    self.clock = 0;
     self.cycles = 8;
   }
 
