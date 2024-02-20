@@ -27,5 +27,7 @@ fn main() {
 
   cpu.reset();
 
-  for _ in cpu {}
+  for _ in cpu {
+    println!();
+  }
 }

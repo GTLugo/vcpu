@@ -1,6 +1,8 @@
-use std::fmt::{Debug, Formatter};
-use std::io::{stdout, Write};
-use std::time::Duration;
+use std::{
+  fmt::{Debug, Formatter},
+  io::{stdout, Write},
+  time::Duration,
+};
 
 use enumflags2::{bitflags, BitFlag, BitFlags};
 
@@ -30,7 +32,7 @@ pub struct Cpu {
   pub(crate) x: u8,
   pub(crate) y: u8,
   pub(crate) stack_ptr: u8,
-  pub(crate) prog_counter: u16,
+  pub(crate) program_counter: u16,
   pub(crate) status: BitFlags<StatusFlags>,
 
   clock_speed: f64,
@@ -41,8 +43,8 @@ impl Debug for Cpu {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     write!(
       f,
-      "a: {:#04X} | x: {:#04X} | y: {:#04X} | stack_ptr: {:#04X} | prog_counter: {:#06X} | cycles: {}",
-      self.a, self.x, self.y, self.stack_ptr, self.prog_counter, self.cycles
+      "a: {:#04X} ({}) | x: {:#04X} ({}) | y: {:#04X} ({}) | stack_ptr: {:#04X} | prog_counter: {:#06X} | cycles: {}",
+      self.a, self.a, self.x, self.x, self.y, self.y, self.stack_ptr, self.program_counter, self.cycles
     )
   }
 }
@@ -62,7 +64,7 @@ impl Cpu {
       x: 0,
       y: 0,
       stack_ptr: 0,
-      prog_counter: 0,
+      program_counter: 0,
       status,
       clock_speed,
       cycles: 0,
@@ -115,14 +117,14 @@ impl Cpu {
 
     let lo = self.read(Self::RESET_ADDRESS);
     let hi = self.read(Self::RESET_ADDRESS + 1);
-    self.prog_counter = u16::from_le_bytes([lo, hi]);
+    self.program_counter = u16::from_le_bytes([lo, hi]);
 
     self.cycles = 8;
   }
 
   pub fn interrupt(&mut self) {
     if !self.is_flag(StatusFlags::Interrupt) {
-      let [lo, hi] = self.prog_counter.to_le_bytes();
+      let [lo, hi] = self.program_counter.to_le_bytes();
       self.push(hi);
       self.push(lo);
 
@@ -133,14 +135,14 @@ impl Cpu {
 
       let lo = self.read(Self::INTERRUPT_ADDRESS);
       let hi = self.read(Self::INTERRUPT_ADDRESS + 1);
-      self.prog_counter = u16::from_le_bytes([lo, hi]);
+      self.program_counter = u16::from_le_bytes([lo, hi]);
 
       self.cycles = 7;
     }
   }
 
   pub fn non_maskable_interrupt(&mut self) {
-    let [lo, hi] = self.prog_counter.to_le_bytes();
+    let [lo, hi] = self.program_counter.to_le_bytes();
     self.push(hi);
     self.push(lo);
 
@@ -151,14 +153,14 @@ impl Cpu {
 
     let lo = self.read(Self::INTERRUPT_ADDRESS);
     let hi = self.read(Self::INTERRUPT_ADDRESS + 1);
-    self.prog_counter = u16::from_le_bytes([lo, hi]);
+    self.program_counter = u16::from_le_bytes([lo, hi]);
 
     self.cycles = 8;
   }
 
   pub fn fetch(&mut self) -> Result<u8, CpuError> {
-    let value = self.read(self.prog_counter);
-    self.prog_counter += 1;
+    let value = self.read(self.program_counter);
+    self.program_counter += 1;
     Ok(value)
   }
 
