@@ -1,3 +1,4 @@
+use std::io::stdin;
 use vcpu::core::{cpu::Cpu, ram::Ram};
 use vcpu::core::bus::BusItem;
 
@@ -22,12 +23,12 @@ fn main() {
   ram.write(0xFFFC, 0x00);
   ram.write(0xFFFD, 0x80);
 
-  let mut cpu = Cpu::new(100.0);
+  let mut cpu = Cpu::new(8.0);
   cpu.connect(ram);
 
   cpu.reset();
 
   for _ in cpu {
-    println!();
+    stdin().read_line(&mut String::new()).unwrap();
   }
 }

@@ -203,7 +203,7 @@ impl Cpu {
       OpCode::LSR => {
         self.set_flag(StatusFlags::Carry, (data & 0x01) == 0x01);
         let temp = data >> 1;
-        self.set_flag(StatusFlags::Zero, temp == 0x0000);
+        self.set_flag(StatusFlags::Zero, temp == 0x00);
         self.set_flag(StatusFlags::Negative, (temp & 0x80) == 0x80);
         if let AddressingMode::Implied | AddressingMode::Accumulator = mode {
           self.a = temp;
@@ -213,20 +213,53 @@ impl Cpu {
       },
       OpCode::NOP => (),
       OpCode::ORA => {
-        todo!()
+        self.a |= data;
+        self.set_flag(StatusFlags::Zero, self.a == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
       },
       OpCode::PHA => {
         self.push(self.a);
       }
-      OpCode::PHP => todo!(),
+      OpCode::PHP => {
+        self.push((self.status | StatusFlags::Unused | StatusFlags::Break).bits());
+        self.set_flag(StatusFlags::Break, false);
+        self.set_flag(StatusFlags::Unused, false);
+      },
       OpCode::PLA => {
         self.a = self.pop();
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
         self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
       }
-      OpCode::PLP => todo!(),
-      OpCode::ROL => todo!(),
-      OpCode::ROR => todo!(),
+      OpCode::PLP => {
+        self.status = self.pop().try_into().map_err(|e| CpuError::Other(format!("{e}")))?;
+        self.set_flag(StatusFlags::Unused, true);
+      },
+      OpCode::ROL => {
+        let carry = self.is_flag(StatusFlags::Carry) as u8;
+        let new_carry = (data & 0x80) == 0x80;
+        let temp = (data << 1) | carry;
+        self.set_flag(StatusFlags::Carry, new_carry);
+        self.set_flag(StatusFlags::Zero, temp == 0x00);
+        self.set_flag(StatusFlags::Negative, (temp & 0x80) == 0x80);
+        if let AddressingMode::Implied | AddressingMode::Accumulator = mode {
+          self.a = temp;
+        } else {
+          self.write(address, temp);
+        }
+      },
+      OpCode::ROR => {
+        let carry = self.is_flag(StatusFlags::Carry) as u8;
+        let new_carry = (data & 0x01) == 0x01;
+        let temp = (carry << 7) | (data >> 1);
+        self.set_flag(StatusFlags::Carry, new_carry);
+        self.set_flag(StatusFlags::Zero, temp == 0x00);
+        self.set_flag(StatusFlags::Negative, (temp & 0x80) == 0x80);
+        if let AddressingMode::Implied | AddressingMode::Accumulator = mode {
+          self.a = temp;
+        } else {
+          self.write(address, temp);
+        }
+      },
       OpCode::RTI => {
         self.status = self.pop().try_into().map_err(|e| CpuError::Other(format!("{e}")))?;
         self.status.toggle(StatusFlags::Break);
@@ -236,7 +269,11 @@ impl Cpu {
         let hi = self.pop();
         self.program_counter = u16::from_le_bytes([lo, hi]);
       }
-      OpCode::RTS => todo!(),
+      OpCode::RTS => {
+        let lo = self.pop();
+        let hi = self.pop();
+        self.program_counter = u16::from_le_bytes([lo, hi]);
+      },
       OpCode::SBC => {
         let input_data = !data;
         let input_carry = self.is_flag(StatusFlags::Carry);
@@ -266,12 +303,34 @@ impl Cpu {
       OpCode::STY => {
         self.write(address, self.y);
       },
-      OpCode::TAX => todo!(),
-      OpCode::TAY => todo!(),
-      OpCode::TSX => todo!(),
-      OpCode::TXA => todo!(),
-      OpCode::TXS => todo!(),
-      OpCode::TYA => todo!(),
+      OpCode::TAX => {
+        self.x = self.a;
+        self.set_flag(StatusFlags::Zero, self.x == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.x & 0x80) == 0x80);
+      },
+      OpCode::TAY => {
+        self.y = self.a;
+        self.set_flag(StatusFlags::Zero, self.y == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.y & 0x80) == 0x80);
+      },
+      OpCode::TSX => {
+        self.x = self.stack_ptr;
+        self.set_flag(StatusFlags::Zero, self.x == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.x & 0x80) == 0x80);
+      },
+      OpCode::TXA => {
+        self.a = self.x;
+        self.set_flag(StatusFlags::Zero, self.a == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
+      },
+      OpCode::TXS => {
+        self.stack_ptr = self.x;
+      },
+      OpCode::TYA => {
+        self.a = self.y;
+        self.set_flag(StatusFlags::Zero, self.a == 0x00);
+        self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
+      },
     }
 
     Ok(cycles)
