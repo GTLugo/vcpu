@@ -9,9 +9,25 @@ pub struct Ram {
 
 impl Ram {
   pub fn new(address_range: RangeInclusive<u16>) -> Self {
-    let data = vec![0; address_range.len()];
+    let data = vec![0xEA; address_range.len()];
 
     Self { address_range, data }
+  }
+
+  pub fn data(&self) -> &[u8] {
+    &self.data
+  }
+
+  pub fn data_mut(&mut self) -> &mut Vec<u8> {
+    &mut self.data
+  }
+
+  pub fn write_at_offset(&mut self, offset: u16, data: &[u8]) {
+    let mut offset = offset as usize;
+    for byte in data {
+      self.data[offset] = *byte;
+      offset += 1;
+    }
   }
 }
 
