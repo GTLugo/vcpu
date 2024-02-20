@@ -14,15 +14,7 @@ impl Ram {
     Self { address_range, data }
   }
 
-  pub fn data(&self) -> &[u8] {
-    &self.data
-  }
-
-  pub fn data_mut(&mut self) -> &mut Vec<u8> {
-    &mut self.data
-  }
-
-  pub fn write_at_offset(&mut self, offset: u16, data: &[u8]) {
+  pub fn write_all(&mut self, offset: u16, data: &[u8]) {
     let mut offset = offset as usize;
     for byte in data {
       self.data[offset] = *byte;
@@ -36,7 +28,7 @@ impl BusItem for Ram {
     &self.address_range
   }
 
-  fn read(&self, address: u16, _read_only: bool) -> u8 {
+  fn read(&mut self, address: u16, _read_only: bool) -> u8 {
     self.data.get(address as usize).cloned().unwrap_or_default()
   }
 

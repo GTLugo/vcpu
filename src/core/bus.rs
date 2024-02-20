@@ -15,8 +15,8 @@ impl Bus {
     Self { items }
   }
 
-  pub fn read(&self, address: u16, read_only: bool) -> u8 {
-    for item in self.items.iter() {
+  pub fn read(&mut self, address: u16, read_only: bool) -> u8 {
+    for item in self.items.iter_mut() {
       if item.address_range().contains(&address) {
         return item.read(address, read_only);
       }
@@ -41,7 +41,7 @@ impl Bus {
 pub trait BusItem {
   fn address_range(&self) -> &RangeInclusive<u16>;
 
-  fn read(&self, address: u16, read_only: bool) -> u8;
+  fn read(&mut self, address: u16, read_only: bool) -> u8;
 
   fn write(&mut self, address: u16, value: u8);
 }

@@ -1,6 +1,6 @@
 use std::{
   fmt::{Debug, Formatter},
-  io::{stdout, Write},
+  io::Write,
   time::Duration,
 };
 
@@ -84,7 +84,10 @@ impl Cpu {
       let instruction = self.decode(opcode)?;
       let instr_string = format!("  => {instruction:?}");
       self.cycles += self.execute(instruction)?;
-      println!("[{}]\nBefore: [{state_before}]\n{instr_string}\nAfter: [{self:?}]\n", self.clock);
+      println!(
+        "[{}]\nBefore: [{state_before}]\n{instr_string}\nAfter: [{self:?}]\n",
+        self.clock
+      );
     }
 
     self.clock += 1;
@@ -93,7 +96,7 @@ impl Cpu {
     Ok(())
   }
 
-  pub fn read(&self, address: u16) -> u8 {
+  pub fn read(&mut self, address: u16) -> u8 {
     self.data_bus.read(address, false)
   }
 
