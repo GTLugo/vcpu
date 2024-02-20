@@ -179,7 +179,7 @@ impl Cpu {
         self.program_counter = address;
       },
       OpCode::JSR => {
-        self.program_counter -= 1;
+        // self.program_counter -= 1;
         let [lo, hi] = self.program_counter.to_le_bytes();
         self.push(hi);
         self.push(lo);
