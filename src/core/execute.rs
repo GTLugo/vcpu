@@ -97,7 +97,7 @@ impl Cpu {
         let lo = self.read(Self::INTERRUPT_ADDRESS);
         let hi = self.read(Self::INTERRUPT_ADDRESS + 1);
         self.program_counter = u16::from_le_bytes([lo, hi]);
-      },
+      }
       OpCode::BVC => {
         if !self.is_flag(StatusFlags::Overflow) {
           self.branch(address, &mut cycles);
@@ -125,7 +125,7 @@ impl Cpu {
         self.set_flag(StatusFlags::Carry, self.a >= data);
         self.set_flag(StatusFlags::Zero, temp == 0x00);
         self.set_flag(StatusFlags::Negative, (temp & 0x80) == 0x80);
-      },
+      }
       OpCode::CPX => {
         let temp = self.x - data;
         self.set_flag(StatusFlags::Carry, self.a >= data);
@@ -177,29 +177,29 @@ impl Cpu {
       }
       OpCode::JMP => {
         self.program_counter = address;
-      },
+      }
       OpCode::JSR => {
         // self.program_counter -= 1;
         let [lo, hi] = self.program_counter.to_le_bytes();
         self.push(hi);
         self.push(lo);
         self.program_counter = address;
-      },
+      }
       OpCode::LDA => {
         self.a = data;
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
         self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
-      },
+      }
       OpCode::LDX => {
         self.x = data;
         self.set_flag(StatusFlags::Zero, self.x == 0x00);
         self.set_flag(StatusFlags::Negative, (self.x & 0x80) == 0x80);
-      },
+      }
       OpCode::LDY => {
         self.y = data;
         self.set_flag(StatusFlags::Zero, self.y == 0x00);
         self.set_flag(StatusFlags::Negative, (self.y & 0x80) == 0x80);
-      },
+      }
       OpCode::LSR => {
         self.set_flag(StatusFlags::Carry, (data & 0x01) == 0x01);
         let temp = data >> 1;
@@ -210,13 +210,13 @@ impl Cpu {
         } else {
           self.write(address, temp);
         }
-      },
+      }
       OpCode::NOP => (),
       OpCode::ORA => {
         self.a |= data;
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
         self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
-      },
+      }
       OpCode::PHA => {
         self.push(self.a);
       }
@@ -224,7 +224,7 @@ impl Cpu {
         self.push((self.status | StatusFlags::Unused | StatusFlags::Break).bits());
         self.set_flag(StatusFlags::Break, false);
         self.set_flag(StatusFlags::Unused, false);
-      },
+      }
       OpCode::PLA => {
         self.a = self.pop();
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
@@ -233,7 +233,7 @@ impl Cpu {
       OpCode::PLP => {
         self.status = self.pop().try_into().map_err(|e| CpuError::Other(format!("{e}")))?;
         self.set_flag(StatusFlags::Unused, true);
-      },
+      }
       OpCode::ROL => {
         let carry = self.is_flag(StatusFlags::Carry) as u8;
         let new_carry = (data & 0x80) == 0x80;
@@ -246,7 +246,7 @@ impl Cpu {
         } else {
           self.write(address, temp);
         }
-      },
+      }
       OpCode::ROR => {
         let carry = self.is_flag(StatusFlags::Carry) as u8;
         let new_carry = (data & 0x01) == 0x01;
@@ -259,7 +259,7 @@ impl Cpu {
         } else {
           self.write(address, temp);
         }
-      },
+      }
       OpCode::RTI => {
         self.status = self.pop().try_into().map_err(|e| CpuError::Other(format!("{e}")))?;
         self.status.toggle(StatusFlags::Break);
@@ -273,7 +273,7 @@ impl Cpu {
         let lo = self.pop();
         let hi = self.pop();
         self.program_counter = u16::from_le_bytes([lo, hi]);
-      },
+      }
       OpCode::SBC => {
         let input_data = !data;
         let input_carry = self.is_flag(StatusFlags::Carry);
@@ -296,41 +296,41 @@ impl Cpu {
       }
       OpCode::STA => {
         self.write(address, self.a);
-      },
+      }
       OpCode::STX => {
         self.write(address, self.x);
-      },
+      }
       OpCode::STY => {
         self.write(address, self.y);
-      },
+      }
       OpCode::TAX => {
         self.x = self.a;
         self.set_flag(StatusFlags::Zero, self.x == 0x00);
         self.set_flag(StatusFlags::Negative, (self.x & 0x80) == 0x80);
-      },
+      }
       OpCode::TAY => {
         self.y = self.a;
         self.set_flag(StatusFlags::Zero, self.y == 0x00);
         self.set_flag(StatusFlags::Negative, (self.y & 0x80) == 0x80);
-      },
+      }
       OpCode::TSX => {
         self.x = self.stack_ptr;
         self.set_flag(StatusFlags::Zero, self.x == 0x00);
         self.set_flag(StatusFlags::Negative, (self.x & 0x80) == 0x80);
-      },
+      }
       OpCode::TXA => {
         self.a = self.x;
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
         self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
-      },
+      }
       OpCode::TXS => {
         self.stack_ptr = self.x;
-      },
+      }
       OpCode::TYA => {
         self.a = self.y;
         self.set_flag(StatusFlags::Zero, self.a == 0x00);
         self.set_flag(StatusFlags::Negative, (self.a & 0x80) == 0x80);
-      },
+      }
     }
 
     Ok(cycles)
@@ -344,7 +344,7 @@ impl Cpu {
       }
       AddressingMode::Immediate(value) => {
         return (*value, self.program_counter - 1);
-      },
+      }
       AddressingMode::Relative(addr) => {
         let mut address = *addr as u16;
         if (address & 0x80) == 0x80 {

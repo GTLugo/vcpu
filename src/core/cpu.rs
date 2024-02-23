@@ -1,6 +1,5 @@
 use std::{
   fmt::{Debug, Formatter},
-  io::Write,
   time::Duration,
 };
 

@@ -1,6 +1,6 @@
 use std::io::stdin;
-use vcpu::core::cpu::Cpu;
-use vcpu::core::ram_file::RamFile;
+
+use vcpu::core::{cpu::Cpu, ram_file::RamFile};
 
 fn main() {
   let mut ram = RamFile::new(0x0000..=0xFFFF);

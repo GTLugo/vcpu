@@ -1,6 +1,10 @@
-use std::{env, fs, fs::File, ops::RangeInclusive};
-use std::io::{Read, Seek, SeekFrom, Write};
-use itertools::Itertools;
+use std::{
+  env,
+  fs,
+  fs::File,
+  io::{Read, Seek, SeekFrom, Write},
+  ops::RangeInclusive,
+};
 
 use crate::core::bus::BusItem;
 

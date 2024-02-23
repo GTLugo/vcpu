@@ -1,6 +1,6 @@
 use strum::Display;
-use crate::core::cpu::Cpu;
-use crate::error::CpuError;
+
+use crate::{core::cpu::Cpu, error::CpuError};
 
 #[derive(Debug)]
 pub struct Instruction {
