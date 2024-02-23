@@ -11,8 +11,6 @@ pub struct RamFile {
 
 impl RamFile {
   pub fn new(address_range: RangeInclusive<u16>) -> Self {
-    let data = vec![0xEA; address_range.len()];
-
     let exe = env::current_exe().unwrap_or_default();
     let exe_dir = exe.parent().unwrap();
     let tmp_dir = exe_dir.join("tmp");
@@ -23,18 +21,19 @@ impl RamFile {
       .write(true)
       .read(true)
       .create(true)
+      .truncate(false)
       .open(&file_path)
       .unwrap();
     let metadata = fs::metadata(&file_path).unwrap();
 
     if metadata.len() == 0 {
-      file.set_len(address_range.len() as u64);
+      file.set_len(address_range.len() as u64).unwrap();
       for _ in address_range.clone() {
-        file.write_all(&[0]);
+        file.write_all(&[0]).unwrap();
       }
     }
 
-    file.sync_data();
+    file.sync_all().unwrap();
 
     Self { address_range, file }
   }
@@ -60,5 +59,6 @@ impl BusItem for RamFile {
   fn write(&mut self, address: u16, value: u8) {
     self.file.seek(SeekFrom::Start(address as u64)).unwrap();
     self.file.write_all(&[value]).unwrap();
+    self.file.sync_all().unwrap();
   }
 }
